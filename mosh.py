@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
-
-
 import glob
 import os
 import sys
+import gc
+
+from subprocess import call
+from ntpath import basename
 
 sys.path.append('RAFT/core')
 sys.path.append('RAFT')
@@ -46,6 +47,10 @@ def convert_frame(f):
     f = np.array(f).astype(np.uint8)
     return torch.from_numpy(f).permute(2, 0, 1).float().unsqueeze(0)
 
+def get_temp_name(f):
+    base = os.path.splitext(f)[0]
+    return f'{base}_tmp.avi'
+
 def read_frames(fname, h=720, w=1280):
 
     cap = cv2.VideoCapture(fname)
@@ -67,6 +72,17 @@ def read_frames(fname, h=720, w=1280):
     
     return frames
 
+def write_frames(frames, fname):
+
+    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
+    out = cv2.VideoWriter(fname, fourcc, 29.97, (w, h))
+
+    for frame in frames:
+        frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        out.write(frame.astype(np.uint8))
+
+    out.release()
+
 if args.raft:
     dummy = Namespace(
         small=True, 
@@ -83,30 +99,45 @@ if args.raft:
     model.to(DEVICE)
     model.eval()
 
+# TODO: make this a command line arg
 h, w = 720, 1080
 
+# if they want to mosh multiple videos get the sorted files
 if args.input_folder != '':
     vid_paths = sorted(glob.glob(f"{args.input_folder}/*"))
 else:
     vid_paths = [args.path1, args.path2]
 
+# if we are in reverse mode, the order of all the videos should be reversed
 if args.reverse:
     vid_paths = vid_paths[::-1]
 
+# load up the first video in the mosh
 init_vid = read_frames(vid_paths[0], h=h, w=w)
 
+# write this video out to temp storage, will remove later
+# but we need it to have the same format as our other output vids
+write_frames(init_vid, get_temp_name(vid_paths[0]))
+
+# if we are in reverse mode, we also reverse the video frames
 if args.reverse:
     init_vid = init_vid[::-1]
 
-all_frames = init_vid
+# save this frame for warping later
+start_frame = init_vid[-1]
+del init_vid
 
 for vid_path in vid_paths[1:]:
+    flows = []
+    outputs = []
+    warps = []
+    masks = []
+
     curr_vid = read_frames(vid_path, h=h, w=w)
     
+    # if in reverse mode always reverse the frames
     if args.reverse:
         curr_vid = curr_vid[::-1]
-    
-    flows = []
     
     for i, (image2, image1) in tqdm(enumerate(zip(curr_vid[:-1], curr_vid[1:])), total=len(curr_vid)):
         if args.raft:
@@ -132,13 +163,9 @@ for vid_path in vid_paths[1:]:
         flows.append(flow)
     
     curr_vid = [np.array(f).astype(np.uint8) for f in curr_vid]
-    
-    start_frame = all_frames[-1]
+
     warped = torch.from_numpy(start_frame).permute(2, 0, 1).unsqueeze(0).float()
     fg_mask = torch.ones_like(warped) * 255.
-    
-    warps = []
-    masks = []
     
     for flw in flows:
     
@@ -151,25 +178,42 @@ for vid_path in vid_paths[1:]:
         masks.append(fg_mask.squeeze(0).permute(1, 2, 0).numpy())
         warps.append(warped.squeeze(0).permute(1, 2, 0).numpy())
     
-    outputs = []
-
     for orig, warped, mask in zip(curr_vid, warps, masks):
         mask = mask.astype(bool)
         warped[~mask] = orig[~mask]
         outputs.append(warped)
     
-    all_frames += outputs
+    del masks
+    del warps
+    del flows
+    gc.collect()
 
-# Define the codec and create VideoWriter object
-fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-out = cv2.VideoWriter(args.out_path, fourcc, 30.0, (w, h))
+    start_frame = outputs[-1]
 
+    # if we are in reverse mode, unreverse the clip to play forward
+    if args.reverse:
+        outputs = outputs[::-1]
+
+    write_frames(outputs, get_temp_name(vid_path))
+
+# if reverse mode, we already reversed these paths so undo that
 if args.reverse:
-    all_frames = all_frames[::-1]
+    vid_paths = vid_paths[::-1]
 
-for frame in all_frames:
-    frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-    out.write(frame.astype(np.uint8))
+temp_names = [get_temp_name(x) for x in vid_paths]
 
-out.release()
+fnames_file = os.path.join(args.input_folder, 'files.txt')
 
+# write out a file for ffmpeg to concatenate these clips.
+# the first clip (or the last clip in reverse mode) should not be moshed
+# so it never gets written out to a temporary file
+with open(fnames_file, 'w+') as f:
+    for fname in temp_names:
+        f.write(f"file '{basename(fname)}'\n")
+
+call(['ffmpeg', '-f', 'concat', '-safe', '0', '-i', fnames_file, '-c', 'copy', args.out_path])
+
+for tmp_name in temp_names:
+    os.remove(tmp_name)
+
+os.remove(fnames_file)
