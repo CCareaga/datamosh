@@ -10,7 +10,6 @@ import sys
 
 sys.path.append('RAFT/core')
 sys.path.append('RAFT')
-sys.path.append('pyflow')
 
 from raft import RAFT
 from utils.utils import InputPadder
@@ -40,7 +39,7 @@ parser.add_argument('--raft', action='store_true', help='flag to use raft flow')
 parser.add_argument('--raft_iter', type=int, help='raft iterations')
 args = parser.parse_args()
 
-DEVICE = 'cuda'
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 def convert_frame(f):
     f = np.array(f).astype(np.uint8)
@@ -77,7 +76,7 @@ if args.raft:
     )
 
     model = torch.nn.DataParallel(RAFT(dummy))
-    model.load_state_dict(torch.load(dummy.model))
+    model.load_state_dict(torch.load(dummy.model, map_location=DEVICE))
 
     model = model.module
     model.to(DEVICE)
