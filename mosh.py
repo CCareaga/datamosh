@@ -56,7 +56,7 @@ def datamosh(args):
         vid_paths = sorted(glob.glob(f"{args.input_folder}/*"))
     else:
         print("Processing the specified video files")
-        vid_paths = [args.path1, args.path2]
+        vid_paths = [args.path_1, args.path_2]
 
     # if we are in reverse mode, the order of all the videos should be reversed
     print("Datamoshing in reverse={}".format(args.reverse))
@@ -119,6 +119,7 @@ def datamosh(args):
             flows.append(flow * args.flow_speed)
 
         curr_vid = [np.array(f).astype(np.uint8) for f in curr_vid]
+        # start_frame = cv2.GaussianBlur(start_frame, (7, 7), 3)
         warped = torch.from_numpy(start_frame).permute(2, 0, 1).unsqueeze(0).float()
         fg_mask = torch.ones_like(warped) * 255.
 
@@ -129,6 +130,11 @@ def datamosh(args):
 
             warped = remap(warped, grid[..., 0], grid[..., 1], mode='nearest', align_corners=True)
             fg_mask = remap(fg_mask, grid[..., 0], grid[..., 1], mode='nearest', align_corners=True)
+            
+            # flw = flow.squeeze(0)
+            # flow_mag = torch.sqrt(flw[0, ...] ** 2 + flw[1, ...] ** 2)            
+            # mag_mask = (flow_mag < np.percentile(flow_mag.numpy(), args.flow_perc)).int()
+            # fg_mask *= mag_mask
 
             masks.append(fg_mask.squeeze(0).permute(1, 2, 0).numpy())
             warps.append(warped.squeeze(0).permute(1, 2, 0).numpy())
@@ -136,6 +142,7 @@ def datamosh(args):
         for orig, warped, mask in zip(curr_vid, warps, masks):
             mask = mask.astype(bool)
             warped[~mask] = orig[~mask]
+
             outputs.append(warped)
 
         del masks
@@ -186,8 +193,9 @@ if __name__ == '__main__':
     # flow arguments
     parser.add_argument('-rv', '--reverse', action='store_true', help='flag to reverse the output')
     parser.add_argument('-rt', '--raft', action='store_true', help='flag to use raft flow')
-    parser.add_argument('-ri', '--raft_iter', type=int, help='raft iterations')
+    parser.add_argument('-ri', '--raft_iter', default=5, type=int, help='raft iterations')
     parser.add_argument('-fs', '--flow_speed', type=float, help='optical flow speed', default=1.0)
+    parser.add_argument('-fp', '--flow_perc', type=float, help='threshold on magnitude before dropping pixels', default=0.0)
 
     # image arguments
     parser.add_argument('-fh', '--height', help='frame height', default=720, type=int)
