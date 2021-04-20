@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 import torch
 
+from PIL import Image
 
 def np_to_torch(frame: np.ndarray) -> torch.Tensor:
     """Method to convert numpy array to torch
@@ -55,6 +56,18 @@ def write_frames(frames: list, fname: str, height: int, width: int):
 
     out.release()
 
+def write_gif(frames: list, fname: str, duration: int = 33, loop: bool = True):
+    
+    img, *imgs = [Image.fromarray(f.astype(np.uint8)) for f in frames]
+
+    img.save(
+        fp=fname, 
+        format='GIF', 
+        append_images=imgs, 
+        save_all=True, 
+        duration=duration, 
+        loop=loop
+    )
 
 def check_directory(path: str):
     """Method to create directory if it does not exist
