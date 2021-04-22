@@ -16,7 +16,7 @@ conda install pytorch=1.6.0 torchvision=0.7.0 cudatoolkit=10.1 matplotlib tensor
 ```
 
 ## Demo
-Use the `demo.sh` to create on the example videos in `videos`
+Use the `demo.sh` to create datamosh using the example videos in `videos`
 ```python
 ./datamosh_demo.sh
 ```
