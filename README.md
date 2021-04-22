@@ -14,6 +14,10 @@ Follow [RAFT](https://github.com/princeton-vl/RAFT) guidelines to install the de
 ```python
 conda install pytorch=1.6.0 torchvision=0.7.0 cudatoolkit=10.1 matplotlib tensorboard scipy opencv -c pytorch
 ```
+Additional python dependencies for datamosh
+```python
+pip install kornia tqdm
+```
 
 ## Demo
 Use the `demo.sh` to create datamosh using the example videos in `videos`
