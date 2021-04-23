@@ -28,7 +28,7 @@ pip install kornia tqdm
 
 ![Alt Text](examples/looping.gif)
 
-```python
+```
 python loop_mosh.py --input_path ./examples/video_01.MOV --output_path ./examples/looping.gif --gif
 ```
 
