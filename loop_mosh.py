@@ -1,12 +1,7 @@
-
 import argparse
 import gc
-import glob
-import os
 import sys
 from argparse import Namespace
-from ntpath import basename
-from subprocess import call
 
 import cv2
 import numpy as np
@@ -15,7 +10,7 @@ from kornia.geometry.transform import remap
 from kornia.utils import create_meshgrid
 from tqdm import tqdm
 
-from mosh_utils import np_to_torch, read_frames, get_temp_name, write_frames, write_gif
+from mosh_utils import np_to_torch, read_frames, write_frames, write_gif
 
 sys.path.append('RAFT/core')
 sys.path.append('RAFT')
@@ -82,7 +77,7 @@ def loop_mosh(args):
         flows.append(flow * args.flow_speed)
 
     vid_frames = [np.array(f).astype(np.uint8) for f in vid_frames]
-   
+
     # the frames are reversed so this is actually the first frame
     start_frame = vid_frames[-1]
 
@@ -110,13 +105,14 @@ def loop_mosh(args):
     del warps
     del flows
     gc.collect()
-    
+
     outputs = outputs[::-1]
 
     if args.gif:
         write_gif(outputs, args.output_path)
     else:
         write_frames(outputs, args.output_path, h, w)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -130,7 +130,7 @@ def datamosh(args):
 
             warped = remap(warped, grid[..., 0], grid[..., 1], mode='nearest', align_corners=True)
             fg_mask = remap(fg_mask, grid[..., 0], grid[..., 1], mode='nearest', align_corners=True)
-            
+
             # flw = flow.squeeze(0)
             # flow_mag = torch.sqrt(flw[0, ...] ** 2 + flw[1, ...] ** 2)            
             # mag_mask = (flow_mag < np.percentile(flow_mag.numpy(), args.flow_perc)).int()
@@ -195,7 +195,8 @@ if __name__ == '__main__':
     parser.add_argument('-rt', '--raft', action='store_true', help='flag to use raft flow')
     parser.add_argument('-ri', '--raft_iter', default=5, type=int, help='raft iterations')
     parser.add_argument('-fs', '--flow_speed', type=float, help='optical flow speed', default=1.0)
-    parser.add_argument('-fp', '--flow_perc', type=float, help='threshold on magnitude before dropping pixels', default=0.0)
+    parser.add_argument('-fp', '--flow_perc', type=float, help='threshold on magnitude before dropping pixels',
+                        default=0.0)
 
     # image arguments
     parser.add_argument('-fh', '--height', help='frame height', default=720, type=int)
