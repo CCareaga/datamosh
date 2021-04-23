@@ -35,7 +35,7 @@ python loop_mosh.py --input_path ./examples/video_01.MOV --output_path ./example
 ----
 2. Panning
 
-For videos with panning or zooming shots, use the `mosh.py` with either a pair of videos or a directory of videos. Refer to the following command line arguments to run the script. Additionally, you can choose between different optical flow frameworks. The default framework is Farneback, to use RAFT, set `--raft` when executing the script. 
+For videos with panning or zooming shots, use the `mosh.py` with either a pair of videos or a directory of videos. Refer to the following command line arguments to run the script. Additionally, you can choose between different optical flow frameworks. The default framework is Farneback, to use RAFT, set `--raft`. The default datamosh effect is in forward direction, to create the reverse effect use `--reverse`. 
 ```
 optional arguments:
   -h, --help            show this help message and exit
