@@ -1,4 +1,8 @@
-# Datamosh
+![Alt Text](examples/logo.png)
+
+This repository contains the code for applying datamosh or 'glitchy' visual effect in videos.
+
+Example datamoshed videos with different video shots -- panning, zooming, looping, etc: [YouTube Playlist](https://youtube.com/playlist?list=PLxQH-axrX98g7myRfhSe2XWomf-mUzuea)
 
 ## Setup
 Clone the datamosh repository and then recursively clone the optical flow [RAFT](https://github.com/princeton-vl/RAFT) dependency.
