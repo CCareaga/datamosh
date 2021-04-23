@@ -22,7 +22,7 @@ pip install kornia tqdm
 ## Demo
 1. Animating Looping
 
-![Alt Text](examples/loop.gif)
+![Alt Text](examples/looping.gif)
 
 ```python
 python loop_mosh.py --input_path ./examples/video_01.MOV --output_path ./examples/looping.gif --gif
