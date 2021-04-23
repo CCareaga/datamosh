@@ -31,3 +31,11 @@ pip install kornia tqdm
 ```python
 python loop_mosh.py --input_path ./examples/video_01.MOV --output_path ./examples/looping.gif --gif
 ```
+
+2. Panning
+
+![Alt Text](examples/panning.gif)
+
+3. Zooming
+
+![Alt Text](examples/zooming.gif)
