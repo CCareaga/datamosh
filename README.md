@@ -20,7 +20,10 @@ pip install kornia tqdm
 ```
 
 ## Demo
-Use the `demo.sh` to create datamosh using the example videos in `videos`
+1. Animating Looping
+
+![Alt Text](examples/loop.gif)
+
 ```python
-./datamosh_demo.sh
+python loop_mosh.py --input_path ./examples/video_01.MOV --output_path ./examples/looping.gif --gif
 ```
