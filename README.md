@@ -69,3 +69,10 @@ python mosh.py --input_path ./<video_directory>/ --output_path ./<output.mp4>
 3. Zooming
 
 ![Alt Text](examples/zooming.gif)
+
+----
+## Credits
+
+We have borrowed code from the following projects: 
+1. [RAFT](https://github.com/princeton-vl/RAFT)
+2. [Farneback](https://opencv-python-tutroals.readthedocs.io/en/latest/py_tutorials/py_video/py_lucas_kanade/py_lucas_kanade.html)
