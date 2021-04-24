@@ -70,7 +70,6 @@ python mosh.py --input_path ./<video_directory>/ --output_path ./<output.mp4>
 
 ![Alt Text](examples/zooming.gif)
 
-----
 ## Credits
 
 We have borrowed code from the following projects: 
